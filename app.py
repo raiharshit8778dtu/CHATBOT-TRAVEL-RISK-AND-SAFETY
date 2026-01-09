@@ -2,10 +2,12 @@ import streamlit as st
 from openai import OpenAI
 import base64
 import os
-from dotenv import load_dotenv
+# Load API key safely
+api_key = st.secrets.get("OPENAI_API_KEY", None)
+if not api_key:
+    st.error("API key not found. Please add OPENAI_API_KEY to Streamlit Secrets.")
+    st.stop()
 
-# Load API key from .env
-api_key = st.secrets["OPENAI_API_KEY"]
 client = OpenAI(api_key=api_key)
 
 # Initialize chat history
