@@ -29,24 +29,24 @@ if uploaded_file and user_input:
     st.session_state["messages"].append({"role": "user", "content": user_input})
 
     # Send text + image to GPT-4 Vision
-    response = openai.chat.completions.create(
-    model="gpt-4-vision-preview",
-    messages=[
-        {
-            "role": "user",
-            "content": [
-                {"type": "text", "text": user_input},
-                {"type": "image_url", "image_url": image_url}
-            ]
-        }
-     ]
-    )
+response = openai.chat.completions.create(
+model="gpt-4-vision-preview",
+messages=[
+     {
+        "role": "user",
+        "content": [
+            {"type": "text", "text": user_input},
+            {"type": "image_url", "image_url": image_url}
+        ]
+     }
+    ]
+)
 
 
-    bot_reply = response.choices[0].message["content"]
+bot_reply = response.choices[0].message["content"]
 
     # Add assistant reply to history
-    st.session_state["messages"].append({"role": "assistant", "content": bot_reply})
+st.session_state["messages"].append({"role": "assistant", "content": bot_reply})
 
     # Show assistant reply in chat UI
-    st.chat_message("assistant").write(bot_reply)
+st.chat_message("assistant").write(bot_reply)
