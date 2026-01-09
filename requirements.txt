@@ -1,0 +1,5 @@
+streamlit==1.52.2
+openai
+python-dotenv
+base64
+os
