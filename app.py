@@ -1,13 +1,16 @@
 import streamlit as st
 from openai import OpenAI
 import base64
-import os
-# Load API key safely
-api_key = st.secrets.get("OPENAI_API_KEY", None)
+
+# ✅ Load API key from Streamlit Secrets
+api_key = st.secrets.get("OPENAI_API_KEY")
+
+# ✅ Stop the app if the key is missing
 if not api_key:
     st.error("API key not found. Please add OPENAI_API_KEY to Streamlit Secrets.")
     st.stop()
 
+# ✅ Initialize OpenAI client
 client = OpenAI(api_key=api_key)
 
 # Initialize chat history
