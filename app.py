@@ -28,4 +28,11 @@ if uploaded_file and user_input:
         }]
     )
 
+if "messages" not in st.session_state:
+    st.session_state["messages"] = []
+
+# Display past messages
+for msg in st.session_state["messages"]:
+    st.chat_message(msg["role"]).write(msg["content"])
+
     st.write(response.choices[0].message["content"])
