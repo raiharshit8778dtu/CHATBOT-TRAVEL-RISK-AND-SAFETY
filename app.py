@@ -5,10 +5,7 @@ import os
 from dotenv import load_dotenv
 
 # Load API key from .env
-load_dotenv()
-api_key = os.getenv("OPENAI_API_KEY")
-
-# Initialize OpenAI client
+api_key = st.secrets["OPENAI_API_KEY"]
 client = OpenAI(api_key=api_key)
 
 # Initialize chat history
