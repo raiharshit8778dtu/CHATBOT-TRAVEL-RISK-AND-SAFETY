@@ -1,10 +1,11 @@
 import streamlit as st
-import openai
+from openai import OpenAI
 import base64
 import os
 from dotenv import load_dotenv
 load_dotenv()
 
+openai = OpenAI()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # 👉 STEP 1: Initialize chat history
@@ -28,16 +29,19 @@ if uploaded_file and user_input:
     st.session_state["messages"].append({"role": "user", "content": user_input})
 
     # Send text + image to GPT-4 Vision
-    response = openai.ChatCompletion.create(
-        model="gpt-4-vision-preview",
-        messages=[
-            {"role": "system", "content": "You are a helpful travel safety chatbot."},
-            {"role": "user", "content": [
+    response = openai.chat.completions.create(
+    model="gpt-4-vision-preview",
+    messages=[
+        {
+            "role": "user",
+            "content": [
                 {"type": "text", "text": user_input},
                 {"type": "image_url", "image_url": image_url}
-            ]}
-        ]
+            ]
+        }
+     ]
     )
+
 
     bot_reply = response.choices[0].message["content"]
 
