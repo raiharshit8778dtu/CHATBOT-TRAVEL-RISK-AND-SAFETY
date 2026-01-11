@@ -1,60 +1,52 @@
 import streamlit as st
-from openai import OpenAI
-import base64
+import openai
+from dotenv import load_dotenv
+import os
 
-# ✅ Load API key from Streamlit Secrets
-api_key = st.secrets.get("OPENAI_API_KEY")
+# Load environment variables
+load_dotenv()
+api_key = os.getenv("OPENAI_API_KEY")
 
-# ✅ Stop the app if the key is missing
+# Stop if API key is missing
 if not api_key:
-    st.error("API key not found. Please add OPENAI_API_KEY to Streamlit Secrets.")
+    st.error("API key not found. Please add OPENAI_API_KEY to your .env or Streamlit Secrets.")
     st.stop()
 
-# ✅ Initialize OpenAI client
-client = OpenAI(api_key=api_key)
+# Initialize OpenAI client
+openai.api_key = api_key
+
+# Streamlit UI
+st.set_page_config(page_title="Travel Risk & Safety Chatbot", layout="centered")
+st.title("🧳 Travel Risk & Safety Chatbot")
+st.write("Ask me about travel safety, health risks, political stability, or natural hazards anywhere in the world.")
 
 # Initialize chat history
 if "messages" not in st.session_state:
-    st.session_state["messages"] = [{"role": "system", "content": "You are a helpful travel safety chatbot."}]
-
-# Display uploaded image preview
-uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
-if uploaded_file:
-    st.image(uploaded_file, caption="Uploaded Image", use_column_width=True)
+    st.session_state.messages = []
 
 # Display chat history
-for msg in st.session_state["messages"]:
-    if msg["role"] != "system":
-        st.chat_message(msg["role"]).write(msg["content"])
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
 
-# Chat input
-user_input = st.chat_input("Ask me about this image:")
+# User input
+user_input = st.chat_input("Where are you traveling to or what safety info do you need?")
+if user_input:
+    st.session_state.messages.append({"role": "user", "content": user_input})
+    with st.chat_message("user"):
+        st.markdown(user_input)
 
-if uploaded_file and user_input:
-    # Convert image to base64
-    image_bytes = uploaded_file.read()
-    image_base64 = base64.b64encode(image_bytes).decode("utf-8")
-    image_url = f"data:image/png;base64,{image_base64}"
-
-    # Add user message to history
-    st.session_state["messages"].append({
-        "role": "user",
-        "content": [
-            {"type": "text", "text": user_input},
-            {"type": "image_url", "image_url": image_url}
-        ]
-    })
-
-    # Send full conversation to GPT-4 Vision
-    response = client.chat.completions.create(
-        model="gpt-4-vision-preview",
-        messages=st.session_state["messages"]
+    # Call OpenAI
+    response = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": "You are a travel safety expert. Provide accurate, up-to-date information about travel risks, health advisories, political stability, and natural hazards."},
+            *st.session_state.messages
+        ],
+        temperature=0.7
     )
 
-    bot_reply = response.choices[0].message.content
-
-    # Add assistant reply to history
-    st.session_state["messages"].append({"role": "assistant", "content": bot_reply})
-
-    # Display assistant reply
-    st.chat_message("assistant").write(bot_reply)
+    reply = response.choices[0].message["content"]
+    st.session_state.messages.append({"role": "assistant", "content": reply})
+    with st.chat_message("assistant"):
+        st.markdown(reply)
