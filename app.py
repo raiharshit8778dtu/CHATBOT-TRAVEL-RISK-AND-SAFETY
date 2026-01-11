@@ -1,22 +1,16 @@
 import streamlit as st
 import openai
-from dotenv import load_dotenv
 import os
+import base64
 from PIL import Image
 
-# Load environment variables
-load_dotenv()
+# Load API key from Streamlit Secrets (recommended for Streamlit Cloud)
 openai.api_key = st.secrets["OPENAI_API_KEY"]
 
-# Stop if API key is missing
-if not openai.api_key:
-    st.error("API key not found. Please add OPENAI_API_KEY to your .env or Streamlit Secrets.")
-    st.stop()
-
-# Streamlit UI
+# Streamlit UI setup
 st.set_page_config(page_title="Image-Based Chatbot", layout="centered")
 st.title("🖼️ Image-Based Chatbot")
-st.write("Upload an image and ask questions about it. The chatbot will analyze the image and respond.")
+st.write("Upload an image and ask a question about it. The chatbot will analyze the image and respond.")
 
 # Initialize chat history
 if "messages" not in st.session_state:
@@ -33,7 +27,9 @@ image_data = None
 if uploaded_image:
     image = Image.open(uploaded_image)
     st.image(image, caption="Uploaded Image", use_column_width=True)
-    image_data = uploaded_image.getvalue()
+    image_bytes = uploaded_image.getvalue()
+    base64_image = base64.b64encode(image_bytes).decode("utf-8")
+    image_data = f"data:image/png;base64,{base64_image}"
 
 # Text input
 user_input = st.chat_input("Ask a question about the image")
@@ -54,7 +50,7 @@ if user_input and image_data:
                 "role": "user",
                 "content": [
                     {"type": "text", "text": user_input},
-                    {"type": "image_url", "image_url": f"data:image/png;base64,{image_data.decode('latin1')}"}
+                    {"type": "image_url", "image_url": {"url": image_data}}
                 ]
             }
         ],
